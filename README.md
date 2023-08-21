@@ -70,12 +70,15 @@ We expect an output in the format as follows:
 
 ##### Step 2: Validate with human labels.
 ###### Option 1: Validation Using MTurker
+
 Generate a rating pipeline where we give MTurkers chats --> ask them to rate (process conflict versus relation conflict versus task conflict.) Get the correlation between our measures and human measures
-RISK: Human raters are really noisy, and this may fail even if our measure is good.
+
+** RISK:** Human raters are really noisy, and this may fail even if our measure is good.
 
 ###### Option 2: Validation by Running New Experiments
 Run experiments of our own where we force people to talk about planning/transition at a specific time ("In the first 2 minutes, you are only allowed to talk about ....") or prevent them from planning (e.g., "you are not allowed to plan, you must discuss ONLY the task itself without talking about how you do it") See if the metric is able to detect that we gave them this instruction
-RISK: expensive, time-consuming, as we have to run brand-new studies. We may have to get a new IRB? Also, people might not listen to our instructions, and they may discuss something else, which adds noise.
+
+** RISK:**  expensive, time-consuming, as we have to run brand-new studies. Also, people might not listen to our instructions, and they may discuss something else, which adds noise.
 
 ###### Option 3: Validation by Running New Experiments
 "Synthetic" data related to process/relation/task conflict. Ask an LLM to generate some data and see if our model can detect whether it is process/relation/task conflict  or not
@@ -84,6 +87,8 @@ RISK: not realistic and LLMs are subject to hallucinations.
 ##### Step 3: Show that the validated measurement is also useful.
 Take our datasets --> Run the actual feature --> Run the models with ONLY the new features i.e. conflict features inside them.
 Run the new feature alongside our features and see whether it is more predictive than other stuff
+
+
 Plot the feature over time and show how it captures known patterns in how people execute/talk during projects.
 
 
