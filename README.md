@@ -54,54 +54,34 @@ We normalize this metric and label a conversation (task) as “below average per
 
 ### Proposed Methodology
 
-Building on our current work, we propose the following methodology to answer our research questions:
-
-Step 1: Initial creation of measure at the chat level.
+##### Step 1: Initial creation of measure at the chat level.
 Identify an initial dataset from our existing datasets to run this on. For each concept we chose in (e.g., "task conflict"), generate a custom word list using our domain knowledge of the datasets (refer previous bullet). Using the Topic modeling framework, create BERT Embeddings for each topic. 
 
 We expect an output in the format as follows:
-Message
-Task Conflict Score
-Process Conflict Score
-Relation Conflict Score
-"I think we should structure the presentation like this. Your approach seems off"
-0.0
-0.9
-0.0
-"I love your presentation"
-0.0
-0.0
-0.0
-"I'm trying my best, but it seems like you're not listening to my ideas either."
-0.0
-0.0
-0.8
-“I like Pizza”
-0.0
-0.0
-0.0
-“I think we should start by designing the experiment. Data analysis does not seem right at this time."
-0.85
-0.0
-0.0
-“We all agree on starting with data analysis”
-0.0
-0.0
-0.0
+| Message                                                                                         | Task Conflict Score | Process Conflict Score | Relation Conflict Score |
+|-------------------------------------------------------------------------------------------------|---------------------|------------------------|-------------------------|
+| "I think we should structure the presentation like this. Your approach seems off"           | 0.0                 | 0.9                    | 0.0                     |
+| "I love your presentation"                                                                     | 0.0                 | 0.0                    | 0.0                     |
+| "I'm trying my best, but it seems like you're not listening to my ideas either."             | 0.0                 | 0.0                    | 0.8                     |
+| “I like Pizza”                                                                                | 0.0                 | 0.0                    | 0.0                     |
+| “I think we should start by designing the experiment. Data analysis does not seem right at this time." | 0.85                | 0.0                    | 0.0                     |
+| “We all agree on starting with data analysis”                                                 | 0.0                 | 0.0                    | 0.0                     |
 
 
-
-Step 2: Validate with human labels.
-Option 1: Validation Using MTurker
+##### Step 2: Validate with human labels.
+###### Option 1: Validation Using MTurker
 Generate a rating pipeline where we give MTurkers chats --> ask them to rate (process conflict versus relation conflict versus task conflict.) Get the correlation between our measures and human measures
 RISK: Human raters are really noisy, and this may fail even if our measure is good.
-Option 2: Validation by Running New Experiments
+
+###### Option 2: Validation by Running New Experiments
 Run experiments of our own where we force people to talk about planning/transition at a specific time ("In the first 2 minutes, you are only allowed to talk about ....") or prevent them from planning (e.g., "you are not allowed to plan, you must discuss ONLY the task itself without talking about how you do it") See if the metric is able to detect that we gave them this instruction
 RISK: expensive, time-consuming, as we have to run brand-new studies. We may have to get a new IRB? Also, people might not listen to our instructions, and they may discuss something else, which adds noise.
-Option 3: Validation by Running New Experiments
+
+###### Option 3: Validation by Running New Experiments
 "Synthetic" data related to process/relation/task conflict. Ask an LLM to generate some data and see if our model can detect whether it is process/relation/task conflict  or not
 RISK: not realistic and LLMs are subject to hallucinations. 
-Step 3: Show that the validated measurement is also useful.
+
+##### Step 3: Show that the validated measurement is also useful.
 Take our datasets --> Run the actual feature --> Run the models with ONLY the new features i.e. conflict features inside them.
 Run the new feature alongside our features and see whether it is more predictive than other stuff
 Plot the feature over time and show how it captures known patterns in how people execute/talk during projects.
