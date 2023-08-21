@@ -58,14 +58,14 @@ We normalize this metric and label a conversation (task) as “below average per
 Identify an initial dataset from our existing datasets to run this on. For each concept we chose in (e.g., "task conflict"), generate a custom word list using our domain knowledge of the datasets (refer previous bullet). Using the Topic modeling framework, create BERT Embeddings for each topic. 
 
 We expect an output in the format as follows:
-| Message                                                                                         | Task Conflict Score | Process Conflict Score | Relation Conflict Score |
-|-------------------------------------------------------------------------------------------------|---------------------|------------------------|-------------------------|
-| "I think we should structure the presentation like this. Your approach seems off"           | 0.0                 | 0.9                    | 0.0                     |
-| "I love your presentation"                                                                     | 0.0                 | 0.0                    | 0.0                     |
-| "I'm trying my best, but it seems like you're not listening to my ideas either."             | 0.0                 | 0.0                    | 0.8                     |
-| “I like Pizza”                                                                                | 0.0                 | 0.0                    | 0.0                     |
+| Message                                                  | Task Conflict Score | Process Conflict Score | Relation Conflict Score |
+|----------------------------------------------------------|---------------------|------------------------|-------------------------|
+| "I think we should structure the presentation like this. Your approach seems off" | 0.0                 | 0.9                    | 0.0                     |
+| "I love your presentation"                              | 0.0                 | 0.0                    | 0.0                     |
+| "I'm trying my best, but it seems like you're not listening to my ideas either." | 0.0                 | 0.0                    | 0.8                     |
+| “I like Pizza”                                         | 0.0                 | 0.0                    | 0.0                     |
 | “I think we should start by designing the experiment. Data analysis does not seem right at this time." | 0.85                | 0.0                    | 0.0                     |
-| “We all agree on starting with data analysis”                                                 | 0.0                 | 0.0                    | 0.0                     |
+| “We all agree on starting with data analysis”            | 0.0                 | 0.0                    | 0.0                     |
 
 
 ##### Step 2: Validate with human labels.
