@@ -2,9 +2,10 @@
 
 ## Motivation
 
+### Why Does Understanding Conflict Matter?
+
 Conflict is an awareness on the part of the parties involved of discrepancies, incompatible wishes, or irreconcilable desires (Boulding, 1963). Conflict is a frequent occurrence in interpersonal dynamics, and it carries the potential for both destructive consequences and constructive growth.
 Conflict is the cause of up to 50% of voluntary and up to 90 % of involuntary departures (excluding departures due to downsizing, mergers, and restructuring) (Dana, 2001). It was estimated in a certain study that replacing an engineer costs the company 150% of the departing employee's total annual compensation—the combination of salary and benefits(Dana, 2001) .
-
 
 Poorly understood and unresolved conflict entails high costs and consequences to an organization and its stakeholders. Watson & Hoffman (1996) anticipate that  managers spent nearly 42% of their time on informal negotiations. Unresolved conflict can be a major cause of employee absenteeism, affecting productivity. (The Blackwell Encyclopedia of Sociology,2007).
 On the flipside, conflict can also stimulate constructive growth. Conflict challenges conventional thinking and encourages the exploration of novel solutions. Diverse perspectives can lead to innovative ideas that drive the team forward (Amason et al., 1997). Actively managing task conflict is beneficial to team performance (DeChurch and Marks, 2001). 
@@ -32,38 +33,67 @@ Zeitzoff, 2017 enlists certain real-life situations (shown below), where social 
 
 ![Alt text](https://github.com/PriyaDCosta/coefficientofconflict/blob/d4a2e1be0b9ef1a2465f5fe789cf48bddd9cd9c6/graphs/Screen%20Shot%202023-08-25%20at%206.56.03%20PM.png)
 
-We expect an output in the format as follows:
-| Message                                                  | Task Conflict Score | Process Conflict Score | Relation Conflict Score |
-|----------------------------------------------------------|---------------------|------------------------|-------------------------|
-| "I think we should structure the presentation like this. Your approach seems off" | 0.0                 | 0.9                    | 0.0                     |
-| "I love your presentation"                              | 0.0                 | 0.0                    | 0.0                     |
-| "I'm trying my best, but it seems like you're not listening to my ideas either." | 0.0                 | 0.0                    | 0.8                     |
-| “I like Pizza”                                         | 0.0                 | 0.0                    | 0.0                     |
-| “I think we should start by designing the experiment. Data analysis does not seem right at this time." | 0.85                | 0.0                    | 0.0                     |
-| “We all agree on starting with data analysis”            | 0.0                 | 0.0                    | 0.0                     |
+## Proposed Research 
 
+In our ongoing research on team communication processes, we have been studying how features of team conversations differ across tasks. Our work involves building a Python-based conversational analysis framework that generates quantifiable features from conversations of real teams. These features are then used to identify how, across different tasks, teams use distinct conversational strategies to succeed.
 
-##### Step 2: Validate with human labels.
-###### Option 1: Validation Using MTurker
+We apply our conversational analysis framework to chat-based datasets from real, online team interactions. The nature of the task varies in each dataset. Our dataset currently consists of ~2600 chats across 5 datasets, each with a different type of task. Each dataset has a specific metric to determine performance that differs based on the task, which we use for building across-task models.
 
+As part of this research, we have also engaged in early-stage exploratory data analysis, examining the prevalence of different topics over the course of a conversation. Below, we provide an overview of our existing work; we then proceed to outlining how this work can be extended to examining conflict through a computational lens.
+
+### Existing Progress: Exploring Topics Over Time
+
+Measuring conflict computationally first requires an understanding of the crux of a team’s conversation. Intuitively, one would expect the crux of the conversation to be around agreeing, affirming, supporting etc. in a low/no conflict scenario, and around disagreement in a conflicted scenario. A conversation is not static, and the crux of the conversation evolves over time, which is why we perform our analysis on time-based “chunks” of the conversation, rather than on the conversation as a whole. Temporally slicing the crux of the conversation helps to identify stages in the conversation. For example, if the crux of the conversation is exchanging pleasantries, sharing designations and disagreeing, it is likely that it is the introduction stage and conflict here may be relational conflict (Jehn and Mannix, 2001) , i.e. conflict about the relation between two people in a team. 
+
+Accordingly, we explored developing the framework “Topics Over Time”, using the BERTopic model published by Grootendorst, 2021. The objective of this framework is to slice a conversation into logical “chunks” of time, and compare how important different topics are to that chunk of the conversation, to obtain the crux of each chunk. 
+
+This comparison is done by first obtaining the top topics for each task i.e. each dataset. We follow two approaches here: (1) The bottom-up approach, whereby BERTopic itself suggests topics, and (2) The top-down approach, whereby humans with domain knowledge about the dataset suggest topics and guide BERTopic on topic modeling. We then chunk each conversation in the dataset into logical chunks of time, and obtain BERT Vector embeddings for each conversation-chunk and each topic. These vectors are compared using cosine similarity, giving us a “similarity score” of how each topic relates to each chunk of the conversation. The figure below helps to visualize our approach:
+
+![Alt text](https://github.com/PriyaDCosta/coefficientofconflict/blob/d4a2e1be0b9ef1a2465f5fe789cf48bddd9cd9c6/graphs/Screen%20Shot%202023-08-25%20at%206.56.03%20PM.png)
+
+We normalized the performance metric for each dataset, and grouped the conversations i.e. teams into below and above performance categories to identify if there exist any peculiarities in what high performing and low performing teams talk about. We also bootstrapped confidence intervals to give a range of the similarity scores for new datasets with similar tasks
+
+![Alt text](https://github.com/PriyaDCosta/coefficientofconflict/blob/d4a2e1be0b9ef1a2465f5fe789cf48bddd9cd9c6/graphs/Screen%20Shot%202023-08-25%20at%206.56.03%20PM.png)
+
+The above table contains an example from the Juries dataset (Hu et al., 2021) where the task on hand is determining whether a certain person should learn to speak English. The image above highlights the different topics, and their similarity scores at different chunks of time in the conversation. The results shown above can be tied back to a sample conversation from the dataset:
+
+![Alt text](https://github.com/PriyaDCosta/coefficientofconflict/blob/d4a2e1be0b9ef1a2465f5fe789cf48bddd9cd9c6/graphs/Screen%20Shot%202023-08-25%20at%206.56.03%20PM.png)
+
+*Results presented  are using the top-down approach, which gives more intuitive topics. 
+
+### Research Questions
+Our key research goal is to derive a computational conflict coefficient (conflict score). Accordingly, we seek to answer the following research questions:
+
+#1 Can team conflict be automatically detected through text-based features?
+#2 What features of communication predict different kinds of conflict (e.g., task, process, and relational conflict)?
+#3 Do computationally-derived conflict features correspond to human intuitions, or perceptions, of conflict?
+#4 Do computationally-derived conflict features predict other team outcomes (e.g., viability, performance)?
+
+## Proposed Methodology
+Our current work lays a foundation for determining how different topics relate to a conversation over time. Our research questions seek to understand conflict can be contextually and computationally measured through text, and it can be used to predict team performance. Accordingly, we propose the following methodology to build on our existing framework to answer our research questions:
+
+### Step 1: Initial creation of measure at the chat level.
+Identify an initial dataset from our existing datasets to run this on. For each concept, we chose (e.g., "task conflict"), we will generate a custom word list using our domain knowledge of the datasets. Using the “Topics Over Time” Framework”, we will calculate a similarity score for the embeddings of each concept and the embeddings of each chat, to determine the conflict type and conflict score.We expect an output in the format as follows:
+
+![Alt text](https://github.com/PriyaDCosta/coefficientofconflict/blob/d4a2e1be0b9ef1a2465f5fe789cf48bddd9cd9c6/graphs/Screen%20Shot%202023-08-25%20at%206.56.03%20PM.png)
+
+### Step 2: Validate with human labels.
+This is an important step in answering Research Question #3 :“Do computationally-derived conflict features correspond to human intuitions, or perceptions, of conflict?”. We consider the following options:
+
+#### Option 1: Validation Using MTurker
 Generate a rating pipeline where we give MTurkers chats --> ask them to rate (process conflict versus relation conflict versus task conflict.) Get the correlation between our measures and human measures
 
-** RISK:** Human raters are really noisy, and this may fail even if our measure is good.
+RISK: Human raters are really noisy, and this may fail even if our measure is good.
 
-###### Option 2: Validation by Running New Experiments
+#### Option 2: Validation by Running New Experiments
 Run experiments of our own where we force people to talk about planning/transition at a specific time ("In the first 2 minutes, you are only allowed to talk about ....") or prevent them from planning (e.g., "you are not allowed to plan, you must discuss ONLY the task itself without talking about how you do it") See if the metric is able to detect that we gave them this instruction
 
-** RISK:**  expensive, time-consuming, as we have to run brand-new studies. Also, people might not listen to our instructions, and they may discuss something else, which adds noise.
+RISK: Expensive, time-consuming, as we have to run brand-new studies. We might need an IRB. People might not listen to our instructions, and they may discuss something else, which adds noise.
 
-###### Option 3: Validation by Running New Experiments
-"Synthetic" data related to process/relation/task conflict. Ask an LLM to generate some data and see if our model can detect whether it is process/relation/task conflict  or not
-RISK: not realistic and LLMs are subject to hallucinations. 
+### Step 3: Show that the validated measurement is also useful.
+This step is relevant to Research Question #4: "Do computationally-derived conflict features predict other team outcomes (e.g., viability, performance)?". It ties back to our objectives of the team process mapping project, which led to the inception of this project. Once a conflict score is computed, we will explore causal relationships between team performance and computationally measured conflict. For example, intuitively, we may think that high levels of relationship conflict predict low performance. This can be validated using the conflict score and the performance metric for the respective task.
 
-##### Step 3: Show that the validated measurement is also useful.
-Take our datasets --> Run the actual feature --> Run the models with ONLY the new features i.e. conflict features inside them.
-Run the new feature alongside our features and see whether it is more predictive than other stuff
-
-
-Plot the feature over time and show how it captures known patterns in how people execute/talk during projects.
+We will  first run the models with ONLY the new features i.e. conflict features inside them. We will then run the new feature alongside our existing features in team process mapping (i.e. politeness, assertiveness, hedging etc.) and see whether it is more predictive.
+Another method We also have a dataset of "team viability" --- where the dependent variable is a survey of whether the team is willing to work with each other again, and not their objective performance. Intuitively, teams with high levels of conflict will not want to work together again.
 
 
