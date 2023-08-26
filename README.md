@@ -49,15 +49,15 @@ Accordingly, we explored developing the framework “Topics Over Time”, using 
 
 This comparison is done by first obtaining the top topics for each task i.e. each dataset. We follow two approaches here: (1) The bottom-up approach, whereby BERTopic itself suggests topics, and (2) The top-down approach, whereby humans with domain knowledge about the dataset suggest topics and guide BERTopic on topic modeling. We then chunk each conversation in the dataset into logical chunks of time, and obtain BERT Vector embeddings for each conversation-chunk and each topic. These vectors are compared using cosine similarity, giving us a “similarity score” of how each topic relates to each chunk of the conversation. The figure below helps to visualize our approach:
 
-![Alt text](https://github.com/PriyaDCosta/coefficientofconflict/blob/d4a2e1be0b9ef1a2465f5fe789cf48bddd9cd9c6/graphs/Screen%20Shot%202023-08-25%20at%206.56.03%20PM.png)
+![Alt text](https://github.com/PriyaDCosta/coefficientofconflict/blob/3aa752629ba966600e94d9a97577be994d434f06/graphs/Screen%20Shot%202023-08-24%20at%208.17.58%20PM.png)
 
 We normalized the performance metric for each dataset, and grouped the conversations i.e. teams into below and above performance categories to identify if there exist any peculiarities in what high performing and low performing teams talk about. We also bootstrapped confidence intervals to give a range of the similarity scores for new datasets with similar tasks
 
-![Alt text](https://github.com/PriyaDCosta/coefficientofconflict/blob/d4a2e1be0b9ef1a2465f5fe789cf48bddd9cd9c6/graphs/Screen%20Shot%202023-08-25%20at%206.56.03%20PM.png)
+![Alt text](https://github.com/PriyaDCosta/coefficientofconflict/blob/3aa752629ba966600e94d9a97577be994d434f06/graphs/Screen%20Shot%202023-08-24%20at%202.45.28%20PM.png)
 
 The above table contains an example from the Juries dataset (Hu et al., 2021) where the task on hand is determining whether a certain person should learn to speak English. The image above highlights the different topics, and their similarity scores at different chunks of time in the conversation. The results shown above can be tied back to a sample conversation from the dataset:
 
-![Alt text](https://github.com/PriyaDCosta/coefficientofconflict/blob/d4a2e1be0b9ef1a2465f5fe789cf48bddd9cd9c6/graphs/Screen%20Shot%202023-08-25%20at%206.56.03%20PM.png)
+![Alt text](https://github.com/PriyaDCosta/coefficientofconflict/blob/3aa752629ba966600e94d9a97577be994d434f06/graphs/Screen%20Shot%202023-08-24%20at%202.45.41%20PM.png)
 
 *Results presented  are using the top-down approach, which gives more intuitive topics. 
 
@@ -75,7 +75,7 @@ Our current work lays a foundation for determining how different topics relate t
 ### Step 1: Initial creation of measure at the chat level.
 Identify an initial dataset from our existing datasets to run this on. For each concept, we chose (e.g., "task conflict"), we will generate a custom word list using our domain knowledge of the datasets. Using the “Topics Over Time” Framework”, we will calculate a similarity score for the embeddings of each concept and the embeddings of each chat, to determine the conflict type and conflict score.We expect an output in the format as follows:
 
-![Alt text](https://github.com/PriyaDCosta/coefficientofconflict/blob/d4a2e1be0b9ef1a2465f5fe789cf48bddd9cd9c6/graphs/Screen%20Shot%202023-08-25%20at%206.56.03%20PM.png)
+![Alt text](https://github.com/PriyaDCosta/coefficientofconflict/blob/3aa752629ba966600e94d9a97577be994d434f06/graphs/Screen%20Shot%202023-08-26%20at%202.06.49%20PM.png)
 
 ### Step 2: Validate with human labels.
 This is an important step in answering Research Question #3 :“Do computationally-derived conflict features correspond to human intuitions, or perceptions, of conflict?”. We consider the following options:
