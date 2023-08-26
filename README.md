@@ -30,7 +30,7 @@ Trying to understand social media without considering the underlying media dynam
 
 Zeitzoff, 2017 enlists certain real-life situations (Table 1), where social media was used to foment or exacerbate conflict, and enlists different theories of conflict that can be tested in those situations. The research questions enlisted here are important questions in social science, particularly conflict research, that can be effectively studied via computational methods, considering the huge volume and dynamic nature of the data involved.
 
-![Table 1: Use of Social Media during Conflict and Implication]([https://assets.digitalocean.com/articles/alligator/boo.svg ](https://drive.google.com/file/d/1R1rJgYs9N9Eww1NQVY5EZ6KwWksnFCeg/view?usp=drive_link)"Table 1: Use of Social Media during Conflict and Implication")
+![Alt text]([https://assets.digitalocean.com/articles/alligator/boo.svg ](https://drive.google.com/file/d/1R1rJgYs9N9Eww1NQVY5EZ6KwWksnFCeg/view?usp=drive_link)"Table 1: Use of Social Media during Conflict and Implication")
 
 We expect an output in the format as follows:
 | Message                                                  | Task Conflict Score | Process Conflict Score | Relation Conflict Score |
