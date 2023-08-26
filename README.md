@@ -2,60 +2,35 @@
 
 ## Motivation
 
-Communication forms the bedrock of human interaction, and conversations form an integral part of communication. Conversations have been studied by social scientists much before advancements in technology. Many theoretically important features that relate to the topic being discussed, and usually, social scientists ask (1) a human to rate the topic manually; (2) ask people what they talked about; or (3) require people to talk about limited topics from a list, in order to study topics in conversation. The inherent nature of social sciences poses problems such as difficulty in defining concepts, vast variations in concepts by context and difficulty in reproducibility, which necessitates quantitative or verifiable qualitative analysis. (Smith, 1997) 
-
-Work in computational social science has attempted to computationally measure previously-qualitative measures, such as Receptiveness (Yeomans et al.), Forward Flow (Gray et al.) , Discursive Diversity (Lix et al.) and Certainty (Rocklage et al.) . The techniques to achieve quantification include lexical word counts (Certainty) and comparison of embeddings (Receptiveness , Free Flow, Discursive Diversity). However, qualitative and subjective methods like surveys and observations still continue to be widely used.
-
-
-In our current work on teams , we have identified conflict as an area where there have not been attempts to develop computational measurements.
+Conflict is an awareness on the part of the parties involved of discrepancies, incompatible wishes, or irreconcilable desires (Boulding, 1963). Conflict is a frequent occurrence in interpersonal dynamics, and it carries the potential for both destructive consequences and constructive growth.
+Conflict is the cause of up to 50% of voluntary and up to 90 % of involuntary departures (excluding departures due to downsizing, mergers, and restructuring) (Dana, 2001). It was estimated in a certain study that replacing an engineer costs the company 150% of the departing employee's total annual compensation—the combination of salary and benefits(Dana, 2001) .
 
 
-### Why does understanding conflict matter?
-
-Conflict, a natural occurrence in interpersonal dynamics, carries the potential for both constructive growth and destructive consequences.
-Conflict is the cause of up to 50 percent of voluntary and up to 90 percent involuntary departures (excluding departures due to downsizing, mergers, and restructuring). Theft and damages costs 2 percent to a company of the staff total cost. It was estimated in a certain study that replacing an engineer costs the company 150% of the departing employee's total annual compensation—the combination of salary and benefits. Analysts arrived at this figure by accounting for lost productivity, recruiting fees, interviewing time, staffing department employees' salaries, and orientation and training costs. (Dana, 2001) 
+Poorly understood and unresolved conflict entails high costs and consequences to an organization and its stakeholders. Watson & Hoffman (1996) anticipate that  managers spent nearly 42% of their time on informal negotiations. Unresolved conflict can be a major cause of employee absenteeism, affecting productivity. (The Blackwell Encyclopedia of Sociology,2007).
+On the flipside, conflict can also stimulate constructive growth. Conflict challenges conventional thinking and encourages the exploration of novel solutions. Diverse perspectives can lead to innovative ideas that drive the team forward (Amason et al., 1997). Actively managing task conflict is beneficial to team performance (DeChurch and Marks, 2001). 
 
 
-Poorly understood and unresolved conflict entails high costs and consequences to an organization and its stakeholders. Watson & Hoffman (1996) anticipate that  managers spent nearly 42% of their time on informal negotiations. Unresolved conflict can be a major cause of employee absenteeism, affecting productivity. (The Blackwell Encyclopedia of Sociology,2007).  
-It is clear that conflict, if unresolved, can have serious consequences.
+It is clear that conflict, if unresolved, can have serious consequences, while conflict, if managed well, can create value for teams and organizations at large. A deeper and possibly contextual understanding of conflict, computed with minimal human intervention to ensure robustness and low bias can help in both these scenarios. 
+De Dreu (2006) suggests that different types of conflict, such as process, relational, and task conflicts, have unique implications. Process conflict, arising from disagreements about how to execute tasks, can spur critical evaluation of methodologies and enhance decision-making. Relational conflict, centered on interpersonal issues, necessitates sensitivity and empathy to preserve healthy working relationships. Task conflict, pertaining to differing opinions on goals, can promote deeper understanding and alignment among team members. In each of these, the topic being discussed will vary. For example, consider a team of software engineers. Intuitively, process conflict would include topics like the coding language, the method for testing the code, timelines for the project etc. Relation conflict would include topics around their designations and experience. Task conflict would include topics around the problem they are trying to solve through the coding exercise. Therefore, a topic-centric approach will help to computationally identify the different types of conflicts.
+
+### Proposed Method: Computationally Quantifying Conflict
+
+Previous ways of measuring conflict have relied on self-report measures. Popular works on understanding team conflict, such as Jehn and Mannix, (2001) , DeChurch and Marks ( 2001) and De Dreu (2006) use self-reported surveys to gauge the level of conflict amongst a team.The inherent nature of social sciences poses problems such as difficulty in defining concepts, vast variations in concepts by context and difficulty in reproducibility, which necessitates quantitative or verifiable qualitative analysis. (Smith, 1997) 
+
+Work in computational social science has attempted to computationally measure previously-qualitative measures, such as Receptiveness (Yeomans et al., 2020), Forward Flow (Gray et al.,2019) , Discursive Diversity (Lix et al.,2020) and Certainty (Rocklage et al.) . The techniques to achieve quantification include lexical word counts (Certainty) and comparison of embeddings (Free Flow and Discursive Diversity). The Receptiveness feature is measured using an existing computational model Politeness (Danescu-Niculescu-Mizil et al. ,2013). However, qualitative and subjective methods like surveys and observations still continue to be widely used. We aim to change this paradigm. 
 
 
-### Why should we measure conflict contextually (i.e using topic modeling) and computationally?
+### Applications
 
 González-Romá and Hernández (2014) emphasize that effective conflict management can lead to improved team cohesion and performance. Addressing conflicts through open communication and resolution strategies can enhance trust and mutual respect, ultimately leading to a harmonious work environment. In a world increasingly driven by technology, where team interactions are often mediated through digital platforms, a manager cannot always be present to gauge and understand conflict amongst their team. This necessitates a need to measure conflict computationally, in order to better understand and manage teams. By quantifying conflict levels, we gain the ability to track conflict dynamics over time, and correlate them to specific contexts, enabling effective conflict resolution.
 
-De Dreu (2006) suggests that different types of conflict, such as process, relational, and task conflicts, have unique implications. Process conflict, arising from disagreements about how to execute tasks, can spur critical evaluation of methodologies and enhance decision-making. Relational conflict, centered on interpersonal issues, necessitates sensitivity and empathy to preserve healthy working relationships. Task conflict, pertaining to differing opinions on goals, can promote deeper understanding and alignment among team members. In each of these, the topic being discussed will vary. For example, consider a team of software engineers. Intuitively, process conflict would include topics like the coding language, the method for testing the code, timelines for the project etc. Relation conflict would include topics around their designations and experience. Task conflict would include topics around the problem they are trying to solve through the coding exercise. Therefore, a topic-centric approach will help to computationally identify the different types of conflicts .
+In addition to advancing the science of team conflict, our work would also have additional applications in an industry setting. Social media is a potential application of a computational system for measuring conflict. Interactions in social media are usually public and conflicts typically involve the masses (Gebauer et al. 2013) The landscape of social media is rife with potential for miscommunication and misunderstandings, often exacerbated by the absence of non-verbal cues typical in face-to-face interactions. Conflict greatly influences value formation on social media; it can create as well as destroy value. (Husemann et al. 2015) 
 
-### Industry Perspective
+Trying to understand social media without considering the underlying media dynamics and incentives is problematic (Zeitzoff, 2017). Existing methods for content moderation, such as hashtag moderation, provides limited understanding on the origin of problematic content (Gerrard, 2018). Sibai et al., 2017 make an attempt to use machine learning tools to identify and classify different posts based on the types of conflict, however they do not compute a conflict score or measure conflict in contextually. Computational and contextual analysis of team conflict can help decode underlying tensions and misinterpretations in textual communication, flagging potential conflicts for intervention, before they can exacerbate into violent situations. 
 
-Social media platforms have become pivotal in human lives. Understanding team dynamics takes on a new level of importance. It is common for groups of users to also represent themselves as teams on social media. For example, many political leaders, affiliated to a certain party, may also maintain their personal social media accounts. 
+Zeitzoff, 2017 enlists certain real-life situations (Table 1), where social media was used to foment or exacerbate conflict, and enlists different theories of conflict that can be tested in those situations. The research questions enlisted here are important questions in social science, particularly conflict research, that can be effectively studied via computational methods, considering the huge volume and dynamic nature of the data involved.
 
-The landscape of social media is rife with potential for miscommunication and misunderstandings, often exacerbated by the absence of non-verbal cues typical in face-to-face interactions. Computational analysis of team conflict can help decode underlying tensions and misinterpretations in textual communication, flagging potential conflicts for intervention, before they can exacerbate into violent situations. This aids in maintaining a positive user experience and preventing public disagreements that may tarnish the platform's reputation.
 
-Using a topic-based approach can help social media companies identify potential sources or reasons of discord, whether they arise from differences in approaches, personal dynamics, or cultural nuances. This insight enables these companies to preemptively address conflicts as well as safeguard themselves from possible legal issues.
-Our Current Work
-
-In our work on team process mapping, we have 5 datasets, each of which contain a number of conversations amongst teams who are supposed to perform a particular task. The nature of the task varies according to the dataset, for example in the Juries dataset (Hu et al., 2021), the task on hand is adjudication, whereas in the CSOP dataset (Almaatouq et al., 2021), the task on hand is optimization within constraints. Naturally, each dataset has a specific metric to determine performance. The performance metric for the Juries dataset is % in Majority, while it is Efficiency (Score / Task Duration) for CSOP.
-
-We have built a Python-based framework to computationally derive topics spoken at different points of time in a conversation.
-Developing the Framework
-
-##### Step 1: Extracting Top Topics (For each dataset)
-We use two approaches (1) Bottom Up Approach (Unguided Topic Modeling), where the base model i.e. BERTopic (Grootendorst, 2022) is used to generate topics without any prompting and (2) Top-Down Approach (Guided Topic Modeling), where we prompt the BERTopic model to generate topics based on our domain knowledge.
-
-##### Step 2: Chunking
-We chunk the conversation into equal units of time based on timestamps. The number of chunks are user-defined. In case of datasets which do not capture timestamps, we chunk the conversation in such a way that each chunk 
-
-##### Step 3 : Creating and Comparing Embeddings
-We generate BERT embeddings, which capture context, for each topic and also for each chunk of each conversation in the dataset. We compute the cosine similarity between each topic and each conversation embedding for each chunk.
-
-##### Step 4 : Grouping Conversations and Bootstrapping Confidence Intervals 
-We normalize this metric and label a conversation (task) as “below average performance” or “above average performance”. We then bootstrap confidence intervals for the cosine similarity for each topic-chunk-label.
-
-### Proposed Methodology
-
-##### Step 1: Initial creation of measure at the chat level.
-Identify an initial dataset from our existing datasets to run this on. For each concept we chose in (e.g., "task conflict"), generate a custom word list using our domain knowledge of the datasets (refer previous bullet). Using the Topic modeling framework, create BERT Embeddings for each topic. 
 
 We expect an output in the format as follows:
 | Message                                                  | Task Conflict Score | Process Conflict Score | Relation Conflict Score |
