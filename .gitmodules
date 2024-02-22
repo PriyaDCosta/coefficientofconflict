@@ -1,3 +1,6 @@
 [submodule "/Users/priyadcosta/Documents/GitHub/coefficientofconflict/submodules"]
 	path = /Users/priyadcosta/Documents/GitHub/coefficientofconflict/submodules
 	url = https://github.com/Watts-Lab/team-process-map
+[submodule "/Users/priyadcosta/Documents/GitHub/coefficientofconflict/reddit-data"]
+	path = /Users/priyadcosta/Documents/GitHub/coefficientofconflict/reddit-data
+	url = https://github.com/xehu/tpm-data-anotation
