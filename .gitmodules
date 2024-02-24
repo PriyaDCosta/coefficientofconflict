@@ -1,0 +1,3 @@
+[submodule "tpm-data-anotation"]
+	path = tpm-data-anotation
+	url = https://github.com/xehu/tpm-data-anotation
