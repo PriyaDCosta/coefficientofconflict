@@ -1,15 +1,24 @@
 import torch
 import pickle
-import random
+import re
 import numpy as np 
 import pandas as pd
 from sklearn.decomposition import PCA
 from torch.nn.utils.rnn import pad_sequence
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 from sentence_transformers import SentenceTransformer
+from sklearn.model_selection import cross_validate, KFold
 from sklearn.metrics import precision_recall_fscore_support
 
+
 def preprocess_for_attention(df):
+
+    #if t
+    df_col = 'CONV_ID'
+    if 'conversation_num' in df.columns:
+        df_col = 'conversation_num'
+    
     # Example DataFrame creation (replace this with your actual DataFrame loading)
     np.random.seed(19104)  # For reproducible random results
 
@@ -25,7 +34,7 @@ def preprocess_for_attention(df):
     Each group corresponds to a unique conversation identified by CONV_ID. 
     The purpose is to treat each conversation as a sequence, which is particularly useful for sequence modeling tasks where the context of the conversation is important. 
     """
-    grouped = df.groupby('CONV_ID')
+    grouped = df.groupby(df_col)
     sequences = []
     targets = []
 
@@ -64,61 +73,120 @@ def preprocess_for_attention(df):
     # Padding sequences to have the same length
     padded_sequences = pad_sequence(sequences, batch_first=True)
 
-    return padded_sequences,targets
-    
+    # Splitting the dataset into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(padded_sequences, targets, test_size=0.2, random_state=19104)
 
+    # Convert lists to tensor for targets if necessary
+    y_train = torch.stack(y_train)
+    y_test = torch.stack(y_test)
+    
+    return X_train, X_test, y_train, y_test
+
+    
+def break_long_messages(df, threshold=200):
+    new_rows = []
+    
+    for index, row in df.iterrows():
+        text = row['text']
+        message_id = row['id']
+        
+
+        if("Diversity means more people" in row["text"]):
+            print(row)
+            print(row["text"])
+        """
+        Check if: 
+        - the message exceeds the threshold; 
+        - there is a newline (\n) in the message we can split on
+        - only do this if not OP
+        """
+        if len(text.split()) > threshold and '\n' in text and  row['reply_to'] != "ORIGINAL_POST":
+            chunks = [chunk.strip() for chunk in text.split('\n') if chunk.strip()]
+
+            current_chunk_id = 1
+            current_chunk = ""
+            gt = False
+            for chunk_num, chunk in enumerate(chunks):
+                current_chunk += chunk
+
+                # SEPARATELY HANDLE QUOTES: if an earlier chunk contains '&gt;' as a character, this is quoting another person.
+                # We want the quote and the response to be grouped together as a single 'idea.'
+                # Detect the "&gt;" character and save it separately if this is the case.  
+                if("&gt;" in chunk):
+                    current_chunk += "\n"
+                    gt = True # toggle 'gt' on if this is the case
+                elif(gt and not "&gt;" in chunk): # We found the response to the quote, so save it.
+                    new_row = row.copy()
+                    new_row['text'] = current_chunk.strip()
+                    new_row['id'] = f"{message_id}_{current_chunk_id}"
+                    new_rows.append(new_row)
+                    current_chunk_id += 1
+                    current_chunk = ""
+                    gt = False
+                elif len(re.sub('\n', '', current_chunk).split()) > threshold: # chunk is long enough; save directly
+                    new_row = row.copy()
+                    new_row['text'] = current_chunk.strip()
+                    new_row['id'] = f"{message_id}_{current_chunk_id}"
+                    new_rows.append(new_row)
+                    current_chunk_id += 1
+                    current_chunk = ""
+                else: # not long enough; add next chunk
+                    current_chunk += "\n"
+            if(current_chunk != ""):
+                # add the last chunk to the df, if it wasn't long enough
+                new_row = row.copy()
+                new_row['text'] = current_chunk.strip()
+                new_row['id'] = f"{message_id}_{current_chunk_id}"
+                new_rows.append(new_row)
+        else:
+            new_rows.append(row) # No changes necessary
+    
+    # Create a new DataFrame with the updated rows
+    new_df = pd.DataFrame(new_rows, columns=df.columns)
+    
+    return new_df
 
 """ 
 Merge the text to the ratings file
 """
 def merge_raw_data(data,winning_df,awry_df):
+    cols = ['CONV_ID','id', 'text','speaker','timestamp', 'meta.score','reply_to', 'conversation_length']
 
-    cols = ['CONV_ID', 'id', 'text','speaker','timestamp', 'meta.score','reply_to', 'conversation_length']
-    
-    merged_df = pd.merge(data, winning_df[cols], on=['CONV_ID', 'id'], how='left') 
-    merged_df = pd.merge(merged_df, awry_df[cols], on=['CONV_ID', 'id'], how='left')
-
-   # List of column pairs to merge: (source_column_1, source_column_2, target_column)
-    columns_to_merge = [
-        ('text_x', 'text_y', 'text'),
-        ('speaker_x', 'speaker_y', 'speaker'),
-        ('timestamp_x', 'timestamp_y', 'timestamp'),
-        ('meta.score_x', 'meta.score_y', 'meta.score'),
-        ('reply_to_x', 'reply_to_y', 'reply_to'),
-        ('conversation_length_x', 'conversation_length_y', 'conversation_length'),
-    ]
-
-    # Iterate over the column pairs and merge them
-    for col1, col2, new_col in columns_to_merge:
-        merged_df[new_col] = np.where(pd.isna(merged_df[col1]), merged_df[col2], merged_df[col1])
-
-    'text_x','speaker_x','timestamp_x', 'meta.score_x', 'reply_to_x','conversation_length_x',
-    'text_y','speaker_y','timestamp_y', 'meta.score_y', 'reply_to_y','conversation_length_y',
-
-    #Drop duplicate rater ids
-    merged_df = merged_df[merged_df['rater_id'] == 'amy']
-
-    #Drop unncessary columns
-    merged_df = merged_df.drop(columns=['rating_directness_content','rating_directness_expression',
-    'rating_OI_content','rating_OI_expression', 'rater_id', 'status', 'last_updated_time',
-    'dataset', 'd_content', 'd_expression', 'oi_content', 'oi_expression','text_x','speaker_x','timestamp_x', 'meta.score_x', 'reply_to_x','conversation_length_x',
-    'text_y','speaker_y','timestamp_y', 'meta.score_y', 'reply_to_y','conversation_length_y'])
-
-    merged_df['human_labels'] = 1
-    awry_df['human_labels'] = 0
-    winning_df['human_labels'] = 0
-
-    awry_df['dataset_numeric'] = 0
+    # Drop duplicate rater ids
+    data = data[data['rater_id'] == 'amy']
+        
+    # Add columns to denote the dataset i.e. winning or awry
     winning_df['dataset_numeric'] = 1
+    awry_df['dataset_numeric'] = 0
 
-    #drop hand labeled rows from the main datasets
-    unique_convo_ids = merged_df['CONV_ID'].unique()
+    # Drop the OP posts
+    winning_df = drop_op(winning_df)
 
-    #Combine non-hand labeled data 
-    combined_df = pd.concat([awry_df, winning_df], ignore_index=True)
-    filtered_combined_df = combined_df[~combined_df['CONV_ID'].isin(unique_convo_ids)]
+    # Merge the complete datasets (winning + awry, labeled and non-labeled)
+    merged_complete_data = pd.concat([winning_df, awry_df], ignore_index=True) 
 
-    return filtered_combined_df,merged_df
+    # Combine with the text data (this is winning + awry hand labeled)
+    hand_labeled_data = pd.merge(data, merged_complete_data[cols], on=['CONV_ID', 'id'], how='left')
+    hand_labeled_data['human_labels'] = 1
+
+    # Get the list of hand labeled rows from the original dataset
+    unique_hand_labeled_convo_ids  = hand_labeled_data['CONV_ID'].unique()
+
+    # Separate non-hand labeled data from other data
+    non_hand_labeled_data = merged_complete_data[~merged_complete_data['CONV_ID'].isin(unique_hand_labeled_convo_ids)]
+    
+    # # Convert the text to str (from obj)
+    hand_labeled_data['text'] = hand_labeled_data['text'].astype(str)
+    non_hand_labeled_data['text'] = non_hand_labeled_data['text'].astype(str)
+
+    #Split the tokens
+    hand_labeled_data = break_long_messages(hand_labeled_data)
+    non_hand_labeled_data = break_long_messages(non_hand_labeled_data)
+
+    print(hand_labeled_data.columns)
+    print(non_hand_labeled_data.columns)
+
+    return hand_labeled_data,non_hand_labeled_data
 
 
 """
@@ -127,9 +195,9 @@ Drop the OP's message for winning conversations
 def drop_op(df):
 
     # Check if there is any row with 'dataset' column value as 'winning'
-    if (df['dataset'] == 'winning').any():
+    if (df['dataset_numeric'] == 1).any():
         # Find the first 'CONV_ID' for which 'dataset' column value is 'winning'
-        first_winning_conv_id = df[df['dataset'] == 'winning']['CONV_ID'].iloc[0]
+        first_winning_conv_id = df[df['dataset_numeric'] == 1]['CONV_ID'].iloc[0]
         
         # Drop the row(s) with this 'CONV_ID'
         df = df[df['CONV_ID'] != first_winning_conv_id]
@@ -258,6 +326,10 @@ def format_for_tpm(df):
     df = df.rename(columns={'CONV_ID' : 'conversation_num', 'text':'message' ,'speaker': 'speaker_nickname'})
     df['message'] = df['message'].astype(str)
     df['message'] = df['message'].astype(str)
+
+    # Drop largest Convos
+    large_convos_list = large_convos(df)
+    df = df[~df['conversation_num'].isin(large_convos_list)]
     
     # get_message_length(df)
     return df
@@ -329,6 +401,121 @@ def calculate_classification_metrics_per_class(y_true, y_pred):
         'F1_score': f1,
     }
 
-    print("Precision by class:", metrics['precision'])
-    print("Recall by class:", metrics['recall'])
-    print("F1 Score by class:", metrics['F1_score'])
+    print("Precision by class:  ", "Awry: ",round(metrics['precision'][0],2),"  ","Winning: ",round(metrics['precision'][1],2))
+    print("Recall by class:     ", "Awry: ",round(metrics['recall'][0],2),"  ","Winning: ",round(metrics['precision'][1],2))
+    print("F1 Score by class:   ", "Awry: ",round(metrics['F1_score'][0],2),"  ","Winning: ",round(metrics['precision'][1],2))
+
+""" 
+Conversation ID of text with more than 500 words
+"""
+def large_convos(df):
+
+    filtered_df = df[df['message'].str.split().apply(len) > 200]
+    conversation_ids = filtered_df['conversation_num'].unique()
+    print(len(conversation_ids.tolist()))
+
+    return conversation_ids.tolist()
+
+def get_stage1_label_counts(df):
+
+    columns = ['d_content_average', 'd_expression_average', 'oi_content_average', 'oi_expression_average','dataset_numeric']
+
+    # Initialize dictionaries to hold counts
+    ones_counts = {}
+    zeros_counts = {}
+
+    total = len(df)
+
+    for col in columns:
+        # Count values for the current columns
+        counts = df[col].value_counts()
+        
+        # Store the counts of 1's and 0's
+        ones_counts[col] = round(counts.get(1, 0) / total,2)
+        zeros_counts[col] = round(counts.get(0, 0) / total,2)
+
+    # Display the counts
+    print("Counts of 1's:")
+    print(ones_counts)
+    print("\nCounts of 0's:")
+    print(zeros_counts)
+
+import pandas as pd
+import numpy as np
+import umap
+
+def reduce_embeddings_dimensionality(df, n_components=10):
+    """
+    Reduce the dimensionality of the 'embeddings' column in a DataFrame using UMAP.
+
+    Parameters:
+    - df: A pandas DataFrame containing an 'embeddings' column, where each row is an array-like embedding.
+    - n_components: The number of dimensions to reduce the embeddings to (default is 2).
+
+    Returns:
+    - A new DataFrame with the original data and an additional column 'reduced_embeddings'
+      containing the embeddings with reduced dimensionality.
+    """
+    # Extract embeddings into a list of arrays
+    embeddings = list(df['embeddings'])
+
+    # Ensure all embeddings are numpy arrays (assuming they're not already)
+    embeddings = [np.array(embedding) for embedding in embeddings]
+    
+    # Stack the list of arrays into a single numpy array for UMAP
+    embeddings_stack = np.vstack(embeddings)
+
+    # Initialize and fit UMAP
+    reducer = umap.UMAP(n_components=n_components, random_state=42)
+    reduced_embeddings = reducer.fit_transform(embeddings_stack)
+
+    # Store the reduced embeddings back into the DataFrame
+    df['reduced_embeddings'] = list(reduced_embeddings)
+
+    return df
+
+def evaluate_model_with_multiple_metrics(model,X, y, n_splits=10):
+
+    # Define the k-fold cross-validation procedure
+    kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)
+    
+    # Define metrics to evaluate
+    scoring = ['accuracy', 'f1_weighted', 'precision_weighted', 'recall_weighted']
+    
+    # Evaluate the model
+    scores = cross_validate(model, X, y, scoring=scoring, cv=kf, return_train_score=False)
+    
+    # Calculate the average scores across all folds
+    avg_scores = {metric: np.mean(values) for metric, values in scores.items()}
+    
+    print(avg_scores)
+
+import re
+
+"""
+Remove text that appears within quotes, specifically between two ">" characters.
+
+Parameters:
+- text: A string containing the original text.
+
+Returns:
+- The text with all quoted text between ">" characters removed.
+"""
+def remove_quotes(text):
+
+    # Define the regex pattern to match text within ">"
+    # Pattern explanation:
+    # - &gt;: Matches the literal character ">"
+    # - .*?: Matches any character (.) any number of times (*), as few times as possible (?)
+    #        to ensure it matches the shortest sequence between ">"
+    # - &gt;: Matches the literal closing ">"
+    pattern = r"&gt;.*?&gt;"
+    
+    # Use re.sub() to replace all occurrences of the pattern with an empty string
+    cleaned_text = re.sub(pattern, '', text)
+    
+    return cleaned_text
+
+def remove_quotes_from_dataset(df,on_column):
+
+    df[on_column] = df[on_column].apply(remove_quotes)

@@ -2,14 +2,53 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 import torch
+import os
+from conflict_utils import *
 import torch.nn as nn
 import torch.optim as optim
+import torch.nn.functional as F
 from torch.utils.data import TensorDataset, DataLoader
 
 """
 Neural Network 
 """
+            
+# Define the neural network model
+class NeuralNetwork(nn.Module):
+    def __init__(self):
+        super(NeuralNetwork, self).__init__() 
+        self.fc1 = nn.Linear(4, 64)   # Input size: 4, Output size: 64
+        self.fc2 = nn.Linear(64, 32)  # Input size: 64, Output size: 32
+        self.fc3 = nn.Linear(32, 1)   # Input size: 32, Output size: 1
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        x = self.relu(self.fc1(x))
+        x = self.relu(self.fc2(x))
+        x = self.relu(self.fc3(x))
+        return x
+
 def predict_using_neural_net(df):
+        
+        test_present = False
+        pred_present = False
+
+        y_test_np = None
+        predictions_np = None
+      
+        # Check if the pickle already exists : if it exists, just unpickle and return the output
+        if os.path.exists("../sandbox/embeddings/stage_2_outputs/stage2_neural_nets_test_output.pickle"):
+
+            test_present = True
+            y_test_np = unpickle_embeddings("../sandbox/embeddings/stage_2_outputs/stage2_neural_nets_test_output.pickle")
+        
+        if os.path.exists("../sandbox/embeddings/stage_2_outputs/stage2_neural_nets_pred_output.pickle"):
+
+            pred_present = True
+            predictions_np = unpickle_embeddings("../sandbox/embeddings/stage_2_outputs/stage2_neural_nets_pred_output.pickle")
+
+        if test_present & pred_present:
+            return y_test_np,predictions_np
 
         # Select features and target variable
         X = df[['d_content_average', 'd_expression_average', 'oi_content_average', 'oi_expression_average']]
@@ -73,38 +112,42 @@ def predict_using_neural_net(df):
             predictions_np = predictions.numpy().astype('float32')
             y_test_np = y_test_tensor.numpy().astype('float32')
 
-        return y_test_np,predictions_np
-            
-# Define the neural network model
-class NeuralNetwork(nn.Module):
-    def __init__(self):
-        self.fc1 = nn.Linear(4, 64)   # Input size: 4, Output size: 64
-        self.fc2 = nn.Linear(64, 32)  # Input size: 64, Output size: 32
-        self.fc3 = nn.Linear(32, 1)   # Input size: 32, Output size: 1
-        self.relu = nn.ReLU()
+        
+        # Store as a pickle
+        pickle_embeddings(predictions_np,"../sandbox/embeddings/stage_2_outputs/stage2_neural_nets_pred_output.pickle")
+        pickle_embeddings(y_test_np,"../sandbox/embeddings/stage_2_outputs/stage2_neural_nets_test_output.pickle")
 
-    def forward(self, x):
-        x = self.relu(self.fc1(x))
-        x = self.relu(self.fc2(x))
-        x = self.relu(self.fc3(x))
-        return x
+        return y_test_np,predictions_np
 
 """
 LSTM With Attention
 """
 
 def predict_using_lstm(df):
+
+    test_present = False
+    pred_present = False
+
+    y_test_np = None
+    predictions_np = None
+
+    # Check if the pickle already exists : if it exists, just unpickle and return the output
+    if os.path.exists("../sandbox/embeddings/stage_2_outputs/stage2_lstm_test_output.pickle"):
+
+        test_present = True
+        y_test_np = unpickle_embeddings("../sandbox/embeddings/stage_2_outputs/stage2_lstm_test_output.pickle")
     
-    # Select features and target variable
-    X = df[['d_content_average', 'd_expression_average', 'oi_content_average', 'oi_expression_average']]
-    y = df['dataset_numeric']
+    if os.path.exists("../sandbox/embeddings/stage_2_outputs/stage2_lstm_pred_output.pickle"):
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=19104)
+        pred_present = True
+        predictions_np = unpickle_embeddings("../sandbox/embeddings/stage_2_outputs/stage2_lstm_pred_output.pickle")
+    
+    if test_present & pred_present:
+        return y_test_np,predictions_np
 
-    y_train = torch.stack(y_train)
-    y_test = torch.stack(y_test)
+    X_train, X_test, y_train, y_test = preprocess_for_attention(df)
 
-    model = LSTMWithAttention()
+    model = LSTMWithAttention(df=df)
 
     # Define loss function and optimizer
     criterion = nn.BCEWithLogitsLoss()
@@ -132,10 +175,15 @@ def predict_using_lstm(df):
         predictions_np = preds.numpy().astype('float32')
         y_test_np = y_test.numpy().astype('float32')
 
+        # Store as a pickle
+        pickle_embeddings(predictions_np,"../sandbox/embeddings/stage_2_outputs/stage2_lstm_pred_output.pickle")
+        pickle_embeddings(y_test_np,"../sandbox/embeddings/stage_2_outputs/stage2_lstm_test_output.pickle")
+
         return y_test_np,predictions_np
     
 class LSTMWithAttention(nn.Module):
     def __init__(self, df,input_dim=4, hidden_dim=64, output_dim=1, num_layers=1):
+        super(LSTMWithAttention, self).__init__() 
         self.hidden_dim = hidden_dim
         self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, batch_first=True)
         self.attention = nn.Linear(hidden_dim, 1)
@@ -168,6 +216,7 @@ class LSTMWithAttention(nn.Module):
         """
         output = self.fc(attn_applied.squeeze(1))
 
+
         return output, attn_weights
     
 """ 
@@ -175,6 +224,26 @@ Logistic Regression
 """
 
 def predict_using_logistic_regression(df):
+
+    test_present = False
+    pred_present = False
+
+    y_test = None
+    y_pred = None
+    
+    # Check if the pickle already exists : if it exists, just unpickle and return the output
+    if os.path.exists("../sandbox/embeddings/stage_2_outputs/stage2_log_reg_test_output.pickle"):
+
+        test_present = True
+        y_test = unpickle_embeddings("../sandbox/embeddings/stage_2_outputs/stage2_log_reg_test_output.pickle")
+    
+    if os.path.exists("../sandbox/embeddings/stage_2_outputs/stage2_log_reg_pred_output.pickle"):
+
+        pred_present = True
+        y_pred = unpickle_embeddings("../sandbox/embeddings/stage_2_outputs/stage2_log_reg_pred_output.pickle")
+
+    if test_present & pred_present:
+        return y_test,y_pred
 
     # Split features and target
     X = df[['d_content_average', 'd_expression_average','oi_content_average','oi_expression_average']]
@@ -185,5 +254,9 @@ def predict_using_logistic_regression(df):
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
+
+    # Store as a pickle
+    pickle_embeddings(y_pred,"../sandbox/embeddings/stage_2_outputs/stage2_log_reg_pred_output.pickle")
+    pickle_embeddings(y_test,"../sandbox/embeddings/stage_2_outputs/stage2_log_reg_test_output.pickle")
 
     return y_test,y_pred

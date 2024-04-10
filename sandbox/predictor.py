@@ -5,9 +5,12 @@ from stage2_models import *
 import os
 
 class PredictionBuilder():
-    def __init__(self,model_1:str,model_2:str) -> None:
-        self.model_1 = model_1
-        self.model_2 = model_2
+    def __init__(self,data_source:str,dimensions:str,regularization:str,stage_1_model:str,stage_2_model:str) -> None:
+        self.data_source = data_source
+        self.dimensions = dimensions
+        self.regularization = regularization
+        self.stage_1_model = stage_1_model
+        self.stage_2_model = stage_2_model
 
     """ 
     Checks if the pickle file for the input data exists, 
@@ -20,10 +23,10 @@ class PredictionBuilder():
             return unpickle_embeddings(input_pickle)
         else:
             #Run the .ipynb notebook
-            print("Generating all inputs, this may take upto 20 minutes.......")
+            print("Generating all inputs, this may take a long time if BERT Embeddings are being generated.......")
 
             import papermill as pm
-            pm.execute_notebook('preproces.ipynb')
+            pm.execute_notebook('preprocess.ipynb')
         
     """ 
     Get the input data, based on the method specified for model 1 i.e. predicting 
@@ -33,32 +36,110 @@ class PredictionBuilder():
     (4) Oppositional Intensity - Expression
 
     based on the method specified in the input
+
+    All the methods will return a single df with hand-labeled + non-hand-labeled data
     """
     def get_input_data(self):
 
-        match self.model_1.lower():
+        train_df = None
+        test_df = None
+        regularizer = None
+        data_set = None
 
-            case "bert": #DONE
+        # Get the data
+        match self.data_source.lower():
 
-                train = self.get_pickled_inputs("embeddings/embeddings_hand_labeled.pickle") #Hand labeled data
-                test = self.get_pickled_inputs("embeddings/embeddings_not_hand_labeled.pickle") 
+            case "embeddings": 
 
-                return classify_using_embeddings(train,test)
+                data_set = "embeddings"
+
+                # Get the dimension
+                match self.dimensions.lower():
+
+                    case "reduced_dim": 
+                        
+                        train_df = self.get_pickled_inputs("embeddings/initial_inputs/embeddings_hand_labeled.pickle") #Hand labeled data
+                        test_df = self.get_pickled_inputs("embeddings/initial_inputs/embeddings_non_hand_labeled.pickle") 
+
+                    case "full_dim":
+
+                        train_df = self.get_pickled_inputs("embeddings/initial_inputs/embeddings_hand_labeled.pickle") #Hand labeled data
+                        test_df = self.get_pickled_inputs("embeddings/initial_inputs/embeddings_non_hand_labeled.pickle") 
+
+            # Get the dimension 
+            case "tpm":
+
+                data_set = "tpm"
+                
+                match self.dimensions.lower():
+
+                    case "reduced_dim": 
+                        
+                        train_df = self.get_pickled_inputs("embeddings/initial_inputs/tpm_hand_labeled.pickle") #Hand labeled data
+                        test_df = self.get_pickled_inputs("embeddings/initial_inputs/tpm_non_hand_labeled.pickle") 
+
+                    case "full_dim":
+
+                        train_df = self.get_pickled_inputs("embeddings/initial_inputs/tpm_hand_labeled.pickle") #Hand labeled data
+                        test_df = self.get_pickled_inputs("embeddings/initial_inputs/tpm_non_hand_labeled.pickle") 
+
+        # Get the regularization
+        match self.regularization.lower():
+
+            case "l1": 
+                regularizer = "l1"
+                
+            case "l2":
+                regularizer = "l2"
+
+            case "elastic_net":
+                regularizer = "elastic_net"
+
+        # Get the model
+
+        match data_set:
+
+            case "tpm": #TPM
+
+                match self.stage_1_model.lower():
+                    
+                    case "logreg": #DONE
+
+                        return classify_using_tpm_with_logreg(train_df,test_df,regularizer)
+                    
+                    case "decision_trees": #DONE
+
+                        return classify_using_tpm_with_decision_tree(train_df,test_df,regularizer)
+
+                    case "xgboost": #DONE
+
+                        return classify_using_tpm_with_xgboost(train_df,test_df,regularizer)
+                    
+                    case "neural_network": #DONE
+
+                        return classify_using_tpm_with_nn(train_df,test_df,regularizer)
+                    
+            case "embeddings":
+
+                 match self.stage_1_model.lower():
+                    
+                    case "logreg": #DONE
+
+                        return classify_using_embeddings_log_reg(train_df,test_df,regularizer)
+                    
+                    case "decision_trees": #TODO
+
+                        pass
+
+                    case "xgboost": #TODO
+
+                        pass
+                    
+                    case "neural_network": #TODO
+
+                        pass
+                    
             
-            case "chat_gpt": #TODO
-
-                train = self.get_pickled_inputs("embeddings/chat_gpt_hand_labeled.pickle") #Hand labeled data
-                test = self.get_pickled_inputs("embeddings/chat_gpt_not_hand_labeled.pickle") 
-
-                return classify_using_chat_gpt(train,test)
-
-            case "tpm": #DONE
-
-                train = self.get_pickled_inputs("embeddings/tpm_hand_labeled.pickle") #Hand labeled data
-                test = self.get_pickled_inputs("embeddings/tpm_not_hand_labeled.pickle") 
-
-                return classify_using_tpm(train,test)
-
             
     """ 
     Based on 4 features, i.e
@@ -72,7 +153,7 @@ class PredictionBuilder():
 
     def get_predictions(self,input_data):
          
-         match self.model_2.lower():
+         match self.stage_2_model.lower():
 
             case "lstm": #DONE
                 
@@ -94,15 +175,18 @@ class PredictionBuilder():
 
     def predict(self):
 
-        #Input data as per the method specified for Model 1
+        # Input data as per the method specified for Model 1
         input_data = self.get_input_data()
         print("Stage 1: Received Input Data as per " + str(self.model_1))
+        print(" ")
+
         
-        #Predictions as per the method specified in Model 2
+        # Predictions as per the method specified in Model 2
         actuals,predictions = self.get_predictions(input_data=input_data)
         print("Stage 2: Predicting as per " + str(self.model_2))
+        print(" ")
 
-        #print metrics
+        # Print metrics
         calculate_classification_metrics_per_class(actuals,predictions)
        
         
