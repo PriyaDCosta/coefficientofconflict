@@ -11,17 +11,24 @@ from sklearn.metrics import f1_score, classification_report
 import matplotlib.pyplot as plt
 
 # Define directories
-base_dir = "/Users/evanrowbotham/Dev/data"
+# base_dir = "/Users/evanrowbotham/Dev/data"
+base_dir = "."
 visualization_dir = os.path.join(base_dir, "level0_data/modeling/visualizations")
 metrics_dir = os.path.join(base_dir, "level0_data/modeling/metrics")
 os.makedirs(visualization_dir, exist_ok=True)
 os.makedirs(metrics_dir, exist_ok=True)
 
 # Input Level 0 dataset
-data = pd.read_csv(os.path.join(base_dir, "larger_level0_data_cleaned_chat_level.csv"))
+# data = pd.read_csv(os.path.join(base_dir, "larger_level0_data_cleaned_chat_level.csv"))
+data = pd.read_csv(os.path.join(base_dir, "smaller_level0_data_cleaned_chat_level.csv"))
+
 
 # Drop the conversation number column
 data = data.drop(columns=['conversation_num'])
+
+# Encode "Low" = 0 and "High" = 1
+data['oppositional_intensity'] = data['oppositional_intensity'].map({'Low': 0, 'High': 1})
+data['directness'] = data['directness'].map({'Low': 0, 'High': 1})
 
 # Separate features and labels
 features = data.drop(columns=['oppositional_intensity', 'directness'])
@@ -46,6 +53,9 @@ f1_scores = {'Oppositional Intensity': {}, 'Directness': {}}
 reports = []
 feature_importances = {'Logistic Regression': {}, 'Random Forest': {}}
 feature_names = numeric_features.columns
+
+print("feature names")
+print(feature_names)
 
 # Set up k-fold cross-validation
 kf = KFold(n_splits=10, shuffle=True, random_state=42)
@@ -138,7 +148,7 @@ np.save(os.path.join(base_dir, 'feature_names.npy'), np.array(feature_names, dty
 def plot_logistic_regression_coefficients():
     if 'Logistic Regression' in feature_importances:
         for task_name, importances in feature_importances['Logistic Regression'].items():
-            importances = normalize_importances(importances)
+            # importances = normalize_importances(importances) # commenting out normalization
             sorted_idx = np.argsort(np.abs(importances))
             top_5_idx = sorted_idx[-5:]  # Get indices of the top 5 features
             
